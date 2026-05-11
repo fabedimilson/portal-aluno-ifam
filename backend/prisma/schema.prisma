@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Campus {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  sigla     String   @unique
+  cidade    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  cursos    Curso[]
+  protocolos Protocolo[]
+
+  @@map("campuses")
+}
+
+model NivelEnsino {
+  id    String @id @default(uuid())
+  nome  String @unique
+
+  cursos Curso[]
+
+  @@map("niveis_ensino")
+}
+
+model Curso {
+  id         String   @id @default(uuid())
+  campusId   String   @map("campus_id")
+  nivelId    String   @map("nivel_id")
+  nome       String
+  turno      String
+  modalidade String   @default("Presencial")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  campus     Campus       @relation(fields: [campusId], references: [id])
+  nivel      NivelEnsino  @relation(fields: [nivelId], references: [id])
+  inscricoes InscricaoPreMatricula[]
+
+  @@index([campusId])
+  @@map("cursos")
+}
+
+model Usuario {
+  id             String   @id @default(uuid())
+  cpf            String   @unique
+  nomeCompleto   String   @map("nome_completo")
+  email          String?  @unique
+  senhaHash      String   @map("senha_hash")
+  telefone       String?
+  role           String   @default("ALUNO")
+  statusCadastro String?  @default("ATIVO") @map("status_cadastro")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  inscricoes     InscricaoPreMatricula[] @relation("UsuarioInscricoes")
+  analises       InscricaoPreMatricula[] @relation("UsuarioAnalises")
+  historicoProfissional EgressoHistoricoProfissional[]
+  protocolos     Protocolo[]
+
+  @@map("usuarios")
+}
+
+model InscricaoPreMatricula {
+  id                        String   @id @default(uuid())
+  usuarioId                 String   @map("usuario_id")
+  cursoId                   String   @map("curso_id")
+  modalidadeCota            String?  @map("modalidade_cota")
+  status                    String?  @default("PENDENTE")
+  questionarioSocioeconomico Json?   @map("questionario_socioeconomico")
+  analisadoPor              String?  @map("analisado_por")
+  dataAnalise               DateTime? @map("data_analise")
+  createdAt                 DateTime @default(now()) @map("created_at")
+
+  usuario                   Usuario  @relation("UsuarioInscricoes", fields: [usuarioId], references: [id])
+  curso                     Curso    @relation(fields: [cursoId], references: [id])
+  analista                  Usuario? @relation("UsuarioAnalises", fields: [analisadoPor], references: [id])
+  documentos                InscricaoDocumento[]
+
+  @@index([status])
+  @@map("inscricoes_pre_matricula")
+}
+
+model InscricaoDocumento {
+  id                 String   @id @default(uuid())
+  inscricaoId        String   @map("inscricao_id")
+  tipoDocumento      String?  @map("tipo_documento")
+  urlS3              String   @map("url_s3")
+  statusValidacao    String?  @default("AGUARDANDO") @map("status_validacao")
+  observacaoRejeicao String?  @map("observacao_rejeicao")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  inscricao          InscricaoPreMatricula @relation(fields: [inscricaoId], references: [id])
+
+  @@map("inscricao_documentos")
+}
+
+model EgressoHistoricoProfissional {
+  id                 String   @id @default(uuid())
+  usuarioId          String   @map("usuario_id")
+  situacao           String
+  empresaInstituicao String?  @map("empresa_instituicao")
+  cargoCurso         String?  @map("cargo_curso")
+  faixaSalarialId    Int?     @map("faixa_salarial_id")
+  dataInicio         DateTime @map("data_inicio") @db.Date
+  dataFim            DateTime? @map("data_fim") @db.Date
+  isAtual            Boolean? @default(true) @map("is_atual")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  usuario            Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([situacao])
+  @@map("egressos_historico_profissional")
+}
+
+model Protocolo {
+  id          String   @id @default(uuid())
+  usuarioId   String   @map("usuario_id")
+  tipo        String
+  campusId    String   @map("campus_id")
+  status      String   @default("Pendente")
+  resultado   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  campus      Campus   @relation(fields: [campusId], references: [id])
+
+  @@map("protocolos")
+}
