@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Briefcase, Users, Star, MapPin, Clock, ChevronRight, 
   CheckCircle, Edit3, Award, Search, Filter, Share2, 
-  Linkedin, GraduationCap, Building2, TrendingUp, X, Sparkles
+  Link2, GraduationCap, Building2, TrendingUp, X, Sparkles
 } from 'lucide-react';
 
 export default function EgressoEcosystem() {
@@ -178,7 +178,7 @@ export default function EgressoEcosystem() {
             <strong>Ricardo Lopes</strong>
             <p>Engenharia Civil • Formado em 2015</p>
             <div className="alumni-tags"><span>Mentor</span><span>Engenharia</span></div>
-            <button className="btn-connect-linkedin"><Linkedin size={14} /> Ver Perfil</button>
+            <button className="btn-connect-linkedin"><Link2 size={14} /> Ver Perfil</button>
           </div>
         </div>
       </div>
